@@ -1,21 +1,29 @@
-class BasicTutorial extends Phaser.Scene {
+class FightTutorial extends Phaser.Scene {
     constructor() {
-        super({ key: 'BasicTutorial' })
+        super({ key: 'FightTutorial'})
     }
     preload() {
         this.load.image('grassblock1', 'assets/big grass block-1.png');
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
-        this.load.image('arrow', 'assets/arrow.png');
-        this.load.image('warp', 'assets/warp.png')
+        this.load.audio('boing', 'assets/Boing-sound/Boing-sound.mp3');
     }
     createPlatform(x, y, size) {
         const platforms = this.physics.add.staticGroup();
         platforms.create(x, y, 'grassblock1').setScale(size); 
         this.physics.add.collider(gameState.player, platforms)
     }
+    createSpring(x, y, size) {
+        const springs = this.physics.add.staticGroup();
+        springs.create(x, y, 'spring').setScale(size); 
+        this.physics.add.collider(gameState.player, springs, () => {
+            gameState.player.setVelocityY(-360);
+            let boing = this.sound.add('boing');
+            boing.play();
+        });
+    }
     create() {
-        gameState.player = this.physics.add.sprite(320, 440, 'shovel');
+        gameState.player = this.physics.add.sprite(320, 400, 'shovel');
         gameState.player.setBounce(0.2);
         gameState. player.setCollideWorldBounds(true);
         this.anims.create({
@@ -39,32 +47,16 @@ class BasicTutorial extends Phaser.Scene {
         for (let x = -20; x < 660; x += 40) {
             this.createPlatform(x, 525, 1);
         };
-        const text1 = this.add.text(250, 335, 'This is you. The shovel', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'})
-        const arrow1 = this.add.image(315, 400, 'arrow');
-        this.time.addEvent({
-            delay: 3000,
-            callback: () => {
-                text1.destroy();
-                arrow1.destroy();
-                const text2 = this.add.text(250, 335, 'Use arrow keys to move', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
-                this.time.addEvent({
-                    delay: 3000,
-                    callback: () => {
-                        text2.destroy();
-                        this.add.text(150, 335, 'This is a warp. Use it to get to the next level', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
-                        this.add.image(150, 400, 'arrow').setAngle(45);
-                        const warps = this.physics.add.staticGroup();
-                        warps.create(75, 487, 'warp');
-                        this.physics.add.collider(gameState.player, warps, ()=> {
-                            this.scene.stop('BasicTutorial');
-                            this.scene.start('JumpTutorial')
-                        })
-                    },
-                    loop: false
-                })
-            },
-            loop: false
-        }); 
+        this.createPlatform(220, 375, 1);
+        this.createSpring(100, 466, 2);
+        const text1 = this.add.text(180, 30, 'This is your health. 5 total', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
+        const arrow1 = this.add.image(150, 30, 'arrow').setAngle(90);
+        const warps = this.physics.add.staticGroup();
+        warps.create(1230, 1337, 'warp');
+        this.physics.add.collider(gameState.player, warps, ()=> {
+            this.scene.stop('JumpTutorial');
+            this.scene.start('FightTutorial')
+        })
         gameState.cursors = this.input.keyboard.createCursorKeys();
     }
     update() {
@@ -82,5 +74,4 @@ class BasicTutorial extends Phaser.Scene {
             gameState.player.setVelocityY(-180);
         }
     }
-    
 }
