@@ -7,11 +7,15 @@ class FightTutorial extends Phaser.Scene {
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
         this.load.audio('boing', 'assets/Boing-sound/Boing-sound.mp3');
+        this.load.spritesheet('pickaxe', 'assets/pickaxe.png', { frameWidth: 32, frameHeight: 32});
+        this.load.image('fullheart', 'assets/fullheart.png');
+        this.load.image('halfheart', 'assets/halfheart.png')
     }
     createPlatform(x, y, size) {
         const platforms = this.physics.add.staticGroup();
         platforms.create(x, y, 'grassblock1').setScale(size); 
-        this.physics.add.collider(gameState.player, platforms)
+        this.physics.add.collider(gameState.player, platforms);
+        this.physics.add.collider(gameState.pickaxe, platforms);
     }
     createSpring(x, y, size) {
         const springs = this.physics.add.staticGroup();
@@ -21,11 +25,18 @@ class FightTutorial extends Phaser.Scene {
             let boing = this.sound.add('boing');
             boing.play();
         });
+        this.physics.add.collider(gameState.pickaxe, springs, () => {
+            gameState.pickaxe.setVelocityY(-360);
+            let boing = this.sound.add('boing');
+            boing.play();
+        });
     }
     create() {
         gameState.player = this.physics.add.sprite(320, 400, 'shovel');
         gameState.player.setBounce(0.2);
-        gameState. player.setCollideWorldBounds(true);
+        gameState.player.setCollideWorldBounds(true);
+        gameState.player.health = 5;
+        gameState.pickaxe = this.physics.add.sprite(500, 300, 'pickaxe').setScale(1.7);
         this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNumbers('shovel', { start: 0, end: 1 }),
@@ -44,6 +55,24 @@ class FightTutorial extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
+        this.anims.create({
+            key: 'idlep',
+            frames: this.anims.generateFrameNumbers('pickaxe', { start: 0, end: 1 }),
+            frameRate: 2,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'rightp',
+            frames: this.anims.generateFrameNumbers('pickaxe', { start: 2, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'leftp',
+            frames: this.anims.generateFrameNumbers('pickaxe', { start: 6, end: 9 }),
+            frameRate: 10,
+            repeat: -1
+        });
         for (let x = -20; x < 660; x += 40) {
             this.createPlatform(x, 525, 1);
         };
@@ -51,6 +80,14 @@ class FightTutorial extends Phaser.Scene {
         this.createSpring(100, 466, 2);
         const text1 = this.add.text(180, 30, 'This is your health. 5 total', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
         const arrow1 = this.add.image(150, 30, 'arrow').setAngle(90);
+        this.time.addEvent({
+            delay: 3000,
+            callback: ()=> {
+                text1.destroy();
+                arrow1.destroy();
+            },
+            loop: false
+        })
         const warps = this.physics.add.staticGroup();
         warps.create(1230, 1337, 'warp');
         this.physics.add.collider(gameState.player, warps, ()=> {
@@ -58,6 +95,9 @@ class FightTutorial extends Phaser.Scene {
             this.scene.start('FightTutorial')
         })
         gameState.cursors = this.input.keyboard.createCursorKeys();
+        for (let i = 30; i < (gameState.player.health + 1) * 30; i += 30) {
+            this.add.image(i, 30, 'fullheart');
+        }
     }
     update() {
         if (gameState.cursors.left.isDown) {  
@@ -73,5 +113,14 @@ class FightTutorial extends Phaser.Scene {
         if (gameState.cursors.up.isDown && gameState.player.body.touching.down) {
             gameState.player.setVelocityY(-180);
         }
+        if(gameState.pickaxe.x > gameState.player.x){
+            gameState.pickaxe.anims.play('leftp', true);
+            gameState.pickaxe.setVelocityX(-100);
+        } else if (gameState.pickaxe.x < gameState.player.x) {
+            gameState.pickaxe.anims.play('rightp', true);
+            gameState.pickaxe.setVelocityX(100);
+        } else {
+            gameState.pickaxe.anims.play('idlep', true);
+        };
     }
 }
