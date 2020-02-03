@@ -7,7 +7,10 @@ class BasicTutorial extends Phaser.Scene {
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
         this.load.image('arrow', 'assets/arrow.png');
-        this.load.image('warp', 'assets/warp.png')
+        this.load.image('warp', 'assets/warp.png');
+        this.load.audio('song', 'assets/song.mp3');
+        this.load.image('mutebutton', 'assets/mute button.png');
+        this.load.image('pausebutton', 'assets/pause button.png');
     }
     createPlatform(x, y, size) {
         const platforms = this.physics.add.staticGroup();
@@ -15,6 +18,24 @@ class BasicTutorial extends Phaser.Scene {
         this.physics.add.collider(gameState.player, platforms)
     }
     create() {
+        let sound = true;
+        let mute = this.add.image(500, 30, 'mutebutton');
+        let pause = this.add.image(550, 30, 'pausebutton');
+        mute.setInteractive();
+        pause.setInteractive();
+        mute.on('pointerup', ()=> {
+            if (sound) {
+                game.sound.mute = true;
+                sound = false;
+            } else {
+                game.sound.mute = false;
+                sound = true;
+            }
+        });
+        pause.on('pointerup', ()=> {
+            this.scene.pause('BasicTutorial');
+            this.scene.launch('PauseSceneBasic');
+        })
         gameState.player = this.physics.add.sprite(320, 440, 'shovel');
         gameState.player.setBounce(0.2);
         gameState. player.setCollideWorldBounds(true);

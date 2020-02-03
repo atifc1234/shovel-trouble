@@ -1,6 +1,6 @@
-class StartScene extends Phaser.Scene {
+class PauseSceneFight extends Phaser.Scene {
     constructor() {
-        super( { key: 'StartScene' } ) 
+        super({ key: 'PauseSceneFight' });
     }
     preload() {
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
@@ -20,20 +20,15 @@ class StartScene extends Phaser.Scene {
                 sound = true;
             }
         });
-        let song = this.sound.add('song');
-        song.play({
-            volume: .3,
-            loop: true
-        });
         this.add.text(220, 50, 'Shovel Trouble', { fill: '#000', fontSize: '30px', fontFamily: 'Georgia'})
         this.add.sprite(330, 300, 'shovel').setScale(5);
-        this.add.text(220, 100, 'Press space to start', { fill: '#000', fontSize: '20px', fontFamily: 'Georgia'});
+        this.add.text(220, 100, 'Press space to resume', { fill: '#000', fontSize: '20px', fontFamily: 'Georgia'});
         gameState.cursors = this.input.keyboard.createCursorKeys();
     }
     update() {
         if (gameState.cursors.space.isDown) {
-            this.scene.stop('StartScene');
-            this.scene.start('BasicTutorial');
+            this.scene.run('FightTutorial');
+            this.scene.stop('PauseSceneFight');
         }
     }
 }

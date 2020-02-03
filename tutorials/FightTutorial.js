@@ -3,13 +3,16 @@ class FightTutorial extends Phaser.Scene {
         super({ key: 'FightTutorial'})
     }
     preload() {
-        this.load.image('grassblock1', 'assets/big grass block-1.png');
+        this.load.spritesheet('grassblock1', 'assets/big grass block-1.png', { frameWidth: 32, frameHeight: 8});
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
-        this.load.audio('boing', 'assets/Boing-sound/Boing-sound.mp3');
+        this.load.audio('boing', 'assets/boing.mp3');
         this.load.spritesheet('pickaxe', 'assets/pickaxe.png', { frameWidth: 32, frameHeight: 32});
         this.load.image('fullheart', 'assets/fullheart.png');
         this.load.image('halfheart', 'assets/halfheart.png')
+        this.load.audio('song', 'assets/song.mp3');
+        this.load.image('mutebutton', 'assets/mute button.png');
+        this.load.image('pausebutton', 'assets/pause button.png');
     }
     createPlatform(x, y, size) {
         const platforms = this.physics.add.staticGroup();
@@ -23,15 +26,34 @@ class FightTutorial extends Phaser.Scene {
         this.physics.add.collider(gameState.player, springs, () => {
             gameState.player.setVelocityY(-360);
             let boing = this.sound.add('boing');
-            boing.play();
+            boing.play({
+                volume: 1.5,
+                loop: false
+            });
         });
         this.physics.add.collider(gameState.pickaxe, springs, () => {
             gameState.pickaxe.setVelocityY(-360);
-            let boing = this.sound.add('boing');
-            boing.play();
         });
     }
     create() {
+        let sound = true;
+        let mute = this.add.image(500, 30, 'mutebutton');
+        let pause = this.add.image(550, 30, 'pausebutton');
+        mute.setInteractive();
+        pause.setInteractive();
+        mute.on('pointerup', ()=> {
+            if (sound) {
+                game.sound.mute = true;
+                sound = false;
+            } else {
+                game.sound.mute = false;
+                sound = true;
+            }
+        });
+        pause.on('pointerup', ()=> {
+            this.scene.pause('FightTutorial');
+            this.scene.launch('PauseSceneFight')
+        })
         gameState.player = this.physics.add.sprite(320, 400, 'shovel');
         gameState.player.setBounce(0.2);
         gameState.player.setCollideWorldBounds(true);
