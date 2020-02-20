@@ -89,9 +89,9 @@ class Level1 extends Phaser.Scene {
         this.createPlatform(660, 525, 1);
         this.createPlatform(420, 200, 1);
         this.createSpring(20, 466, 2);
-        gameState.cursors = this.input.keyboard.createCursorKeys();
     }
     update() {
+        gameState.cursors = this.input.keyboard.createCursorKeys();
         if (gameState.cursors.left.isDown) {  
             gameState.player.setVelocityX(-160);
             gameState.player.anims.play('left', true);

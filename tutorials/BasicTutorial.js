@@ -86,9 +86,9 @@ class BasicTutorial extends Phaser.Scene {
             },
             loop: false
         }); 
-        gameState.cursors = this.input.keyboard.createCursorKeys();
     }
     update() {
+        gameState.cursors = this.input.keyboard.createCursorKeys();
         if (gameState.cursors.left.isDown) {  
             gameState.player.setVelocityX(-160);
             gameState.player.anims.play('left', true);

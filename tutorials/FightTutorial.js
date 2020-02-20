@@ -3,11 +3,11 @@ class FightTutorial extends Phaser.Scene {
         super({ key: 'FightTutorial'})
     }
     preload() {
-        this.load.spritesheet('grassblock1', 'assets/big grass block-1.png', { frameWidth: 32, frameHeight: 8});
+        this.load.image('grassblock1', 'assets/big grass block-1.png');
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
-        this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
+        this.load.image('spring', 'assets/spring.png');
         this.load.audio('boing', 'assets/boing.mp3');
-        this.load.spritesheet('pickaxe', 'assets/pickaxe.png', { frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('pickaxe', 'assets/pickaxe.png', { frameWidth: 18, frameHeight: 18});
         this.load.image('fullheart', 'assets/fullheart.png');
         this.load.image('halfheart', 'assets/halfheart.png')
         this.load.audio('song', 'assets/song.mp3');
@@ -52,12 +52,14 @@ class FightTutorial extends Phaser.Scene {
         });
         pause.on('pointerup', ()=> {
             this.scene.pause('FightTutorial');
-            this.scene.launch('PauseSceneFight')
+            this.scene.launch('PauseSceneFight');
         })
+        gameState.fullheart = this.physics.add.staticGroup();
         gameState.player = this.physics.add.sprite(320, 400, 'shovel');
         gameState.player.setBounce(0.2);
         gameState.player.setCollideWorldBounds(true);
         gameState.player.health = 5;
+        gameState.player.wasHit = false;
         gameState.pickaxe = this.physics.add.sprite(500, 300, 'pickaxe').setScale(1.7);
         this.anims.create({
             key: 'idle',
@@ -100,8 +102,8 @@ class FightTutorial extends Phaser.Scene {
         };
         this.createPlatform(220, 375, 1);
         this.createSpring(100, 466, 2);
-        const text1 = this.add.text(180, 30, 'This is your health. 5 total', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
-        const arrow1 = this.add.image(150, 30, 'arrow').setAngle(90);
+        const text1 = this.add.text(210, 30, 'This is your health. 5 total', { fill: '#000', fontSize: '15px', fontFamily: 'Georgia'});
+        const arrow1 = this.add.image(180, 30, 'arrow').setAngle(90);
         this.time.addEvent({
             delay: 3000,
             callback: ()=> {
@@ -115,13 +117,63 @@ class FightTutorial extends Phaser.Scene {
         this.physics.add.collider(gameState.player, warps, ()=> {
             this.scene.stop('JumpTutorial');
             this.scene.start('FightTutorial')
-        })
-        gameState.cursors = this.input.keyboard.createCursorKeys();
-        for (let i = 30; i < (gameState.player.health + 1) * 30; i += 30) {
-            this.add.image(i, 30, 'fullheart');
-        }
+        });
+        this.physics.add.collider(gameState.pickaxe, gameState.player, ()=>{
+            if (gameState.pickaxe.body.touching.up && gameState.player.body.touching.down) {
+                gameState.pickaxe.setActive(false);
+                gameState.pickaxe.setVisible(false);
+                gameState.pickaxe.x = 1000;
+            } else if (!gameState.player.wasHit && (gameState.pickaxe.body.touching.down && gameState.player.body.touching.up || gameState.pickaxe.body.touching.left && gameState.player.body.touching.right || gameState.pickaxe.body.touching.right && gameState.player.body.touching.left)) {
+                gameState.player.health -= 1;
+                console.log(gameState.player.health);
+                gameState.player.wasHit = true
+            } else if (gameState.player.wasHit) {
+                this.time.addEvent({
+                    delay: 1500,
+                    callback: ()=> {
+                        gameState.player.wasHit = false
+                    },
+                    loop: false
+                })
+            }
+            });
     }
     update() {
+        switch (gameState.player.health) {
+            case 5:
+                gameState.fullheart.setVisible(false)
+                for (let i = 30; i < 6 * 30; i += 30) {
+                    gameState.fullheart.create(i, 30, 'fullheart');
+                };
+                break;
+            case 4:
+                gameState.fullheart.setVisible(false)
+                for (let i = 30; i < 5 * 30; i += 30) {
+                    gameState.fullheart.create(i, 30, 'fullheart');
+                };
+                break;
+            case 3:
+                gameState.fullheart.setVisible(false)
+                for (let i = 30; i < 4 * 30; i += 30) {
+                    gameState.fullheart.create(i, 30, 'fullheart');
+                };
+                break;
+            case 2:
+                gameState.fullheart.setVisible(false)
+                for (let i = 30; i < 3 * 30; i += 30) {
+                    gameState.fullheart.create(i, 30, 'fullheart');
+                };
+                break;
+            case 1:
+                gameState.fullheart.setVisible(false)
+                for (let i = 30; i < 2 * 30; i += 30) {
+                    gameState.fullheart.create(i, 30, 'fullheart');
+                };
+                break;
+            default:
+                this.scene.stop('FightTutorial')
+        }
+        gameState.cursors = this.input.keyboard.createCursorKeys();
         if (gameState.cursors.left.isDown) {  
             gameState.player.setVelocityX(-160);
             gameState.player.anims.play('left', true);
@@ -135,7 +187,7 @@ class FightTutorial extends Phaser.Scene {
         if (gameState.cursors.up.isDown && gameState.player.body.touching.down) {
             gameState.player.setVelocityY(-180);
         }
-        if(gameState.pickaxe.x > gameState.player.x){
+        if (gameState.pickaxe.x > gameState.player.x && (gameState.pickaxe.y )){
             gameState.pickaxe.anims.play('leftp', true);
             gameState.pickaxe.setVelocityX(-100);
         } else if (gameState.pickaxe.x < gameState.player.x) {

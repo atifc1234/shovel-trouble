@@ -5,7 +5,7 @@ class JumpTutorial extends Phaser.Scene {
     preload() {
         this.load.image('grassblock1', 'assets/big grass block-1.png');
         this.load.spritesheet('shovel', 'assets/shovel idle clone.png', { frameWidth: 32, frameHeight: 32});
-        this.load.spritesheet('spring', 'assets/spring.png', {frameWidth: 11, frameHeight: 11});
+        this.load.image('spring', 'assets/spring.png');
         this.load.audio('boing', 'assets/boing.mp3');
         this.load.audio('song', 'assets/song.mp3');
         this.load.image('mutebutton', 'assets/mute button.png');
@@ -80,10 +80,10 @@ class JumpTutorial extends Phaser.Scene {
         this.physics.add.collider(gameState.player, warps, ()=> {
             this.scene.stop('JumpTutorial');
             this.scene.start('FightTutorial');
-        })
-        gameState.cursors = this.input.keyboard.createCursorKeys();
+        });
     }
     update() {
+        gameState.cursors = this.input.keyboard.createCursorKeys();
         if (gameState.cursors.left.isDown) {  
             gameState.player.setVelocityX(-160);
             gameState.player.anims.play('left', true);
